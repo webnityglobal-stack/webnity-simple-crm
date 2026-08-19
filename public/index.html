@@ -29,7 +29,7 @@
 
     </div>
 
-    <button class="refresh-btn" onclick="load()">
+    <button onclick="load()" class="refresh-btn">
       ↻ Refresh
     </button>
 
@@ -65,19 +65,45 @@
 
     <section class="tools">
 
+      <button
+        id="addLeadBtn"
+        class="add-lead-btn"
+        onclick="openLeadForm()"
+      >
+        + Add Lead
+      </button>
+
       <input
         id="search"
-        type="text"
         placeholder="Search leads..."
       >
 
       <select id="filter">
-        <option value="">All Status</option>
-        <option>New</option>
-        <option>Contacted</option>
-        <option>Qualified</option>
-        <option>Won</option>
-        <option>Lost</option>
+
+        <option value="">
+          All Status
+        </option>
+
+        <option>
+          New
+        </option>
+
+        <option>
+          Contacted
+        </option>
+
+        <option>
+          Qualified
+        </option>
+
+        <option>
+          Won
+        </option>
+
+        <option>
+          Lost
+        </option>
+
       </select>
 
     </section>
@@ -85,9 +111,9 @@
 
     <section class="card">
 
-      <div class="table-header">
+      <div class="lead-title">
         <h2>Lead Management</h2>
-        <span>Webnity Global</span>
+        <p>Webnity Global</p>
       </div>
 
       <div class="table-wrapper">
@@ -95,16 +121,27 @@
         <table>
 
           <thead>
+
             <tr>
+
               <th>Name</th>
+
               <th>Mobile</th>
+
               <th>Business</th>
+
               <th>Service</th>
+
               <th>Platform</th>
+
               <th>Status</th>
+
               <th>Requirement</th>
+
               <th>Action</th>
+
             </tr>
+
           </thead>
 
           <tbody id="rows"></tbody>

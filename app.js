@@ -269,27 +269,32 @@ async function deleteLead(id) {
 }
 
 function createAddButton() {
-  if (document.getElementById("addLeadBtn")) {
-    return;
+  let button = document.getElementById("addLeadBtn");
+
+  if (!button) {
+    button = document.createElement("button");
+    button.id = "addLeadBtn";
+    button.className = "add-lead-btn";
+    button.type = "button";
+    button.textContent = "+ Add Lead";
+
+    const tools = document.querySelector(".tools");
+
+    if (tools) {
+      tools.prepend(button);
+    } else {
+      document.body.prepend(button);
+    }
   }
 
-  const button = document.createElement("button");
+  // Direct click connection
+  button.onclick = function (event) {
+    event.preventDefault();
+    event.stopPropagation();
 
-  button.id = "addLeadBtn";
-  button.className = "add-lead-btn";
-  button.textContent = "+ Add Lead";
-
-  button.addEventListener("click", () => {
+    console.log("Add Lead clicked");
     openLeadForm();
-  });
-
-  const tools = document.querySelector(".tools");
-
-  if (tools) {
-    tools.prepend(button);
-  } else {
-    document.body.prepend(button);
-  }
+  };
 }
 
 function openLeadForm(id = null) {

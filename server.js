@@ -1,0 +1,11 @@
+const express=require("express"),cors=require("cors"),fs=require("fs"),path=require("path"),crypto=require("crypto");
+const app=express(),PORT=process.env.PORT||3000,KEY=process.env.ADMIN_KEY||"webnity-admin-change-me";
+const file=path.join(__dirname,"data","leads.json"); if(!fs.existsSync(file))fs.writeFileSync(file,"[]");
+app.use(cors());app.use(express.json());app.use(express.static(path.join(__dirname,"public")));
+const auth=(q,s,n)=>q.get("x-admin-key")===KEY?n():s.status(401).json({error:"Unauthorized"});
+const read=()=>JSON.parse(fs.readFileSync(file));const write=x=>fs.writeFileSync(file,JSON.stringify(x,null,2));
+app.get("/api/health",(q,s)=>s.json({ok:true,service:"Webnity Global CRM"}));
+app.post("/api/leads",auth,(q,s)=>{let b=q.body,l={id:crypto.randomUUID(),createdAt:new Date().toISOString(),status:"New",full_name:String(b.full_name||"").trim(),mobile_number:String(b.mobile_number||"").trim(),business_name:String(b.business_name||"").trim(),service:String(b.service||"").trim(),platform:String(b.platform||"").trim(),requirement:String(b.requirement||"").trim()};if(!l.full_name||!l.mobile_number)return s.status(400).json({error:"full_name and mobile_number required"});let a=read();a.unshift(l);write(a);s.status(201).json({success:true,lead:l})});
+app.get("/api/leads",auth,(q,s)=>s.json(read()));
+app.patch("/api/leads/:id",auth,(q,s)=>{let a=read(),i=a.findIndex(x=>x.id===q.params.id);if(i<0)return s.status(404).json({error:"Not found"});if(["New","Contacted","Qualified","Won","Lost"].includes(q.body.status))a[i].status=q.body.status;write(a);s.json({success:true,lead:a[i]})});
+app.get("*",(q,s)=>s.sendFile(path.join(__dirname,"public","index.html")));app.listen(PORT,()=>console.log("CRM on "+PORT));

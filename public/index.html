@@ -1,9 +1,8 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>Webnity Global CRM</title>
 
@@ -12,6 +11,7 @@
 
 <body>
 
+  <!-- CRM HEADER -->
   <header class="crm-header">
 
     <div class="brand">
@@ -24,94 +24,80 @@
 
       <div class="brand-text">
         <h1>Webnity Global CRM</h1>
+        <div class="brand-line"></div>
         <p>WhatsApp Lead Management</p>
       </div>
 
     </div>
 
-    <button onclick="load()" class="refresh-btn">
+    <button id="refreshBtn" class="refresh-btn">
       ↻ Refresh
     </button>
 
   </header>
 
 
-  <main>
+  <!-- DASHBOARD -->
+  <main class="crm-container">
 
-    <section class="stats">
+    <section class="stats-grid">
 
       <div class="stat-card total-card">
         <span>Total Leads</span>
-        <b id="total">0</b>
+        <strong id="total">0</strong>
       </div>
 
       <div class="stat-card new-card">
         <span>New</span>
-        <b id="new">0</b>
+        <strong id="new">0</strong>
       </div>
 
       <div class="stat-card contacted-card">
         <span>Contacted</span>
-        <b id="contacted">0</b>
+        <strong id="contacted">0</strong>
       </div>
 
       <div class="stat-card qualified-card">
         <span>Qualified</span>
-        <b id="qualified">0</b>
+        <strong id="qualified">0</strong>
       </div>
 
     </section>
 
 
-    <section class="tools">
+    <!-- SEARCH AREA -->
+    <section class="toolbar">
 
       <button
+        type="button"
         id="addLeadBtn"
         class="add-lead-btn"
-        onclick="openLeadForm()"
       >
         + Add Lead
       </button>
 
       <input
+        type="text"
         id="search"
         placeholder="Search leads..."
+        autocomplete="off"
       >
 
       <select id="filter">
-
-        <option value="">
-          All Status
-        </option>
-
-        <option>
-          New
-        </option>
-
-        <option>
-          Contacted
-        </option>
-
-        <option>
-          Qualified
-        </option>
-
-        <option>
-          Won
-        </option>
-
-        <option>
-          Lost
-        </option>
-
+        <option value="">All Status</option>
+        <option value="New">New</option>
+        <option value="Contacted">Contacted</option>
+        <option value="Qualified">Qualified</option>
+        <option value="Lost">Lost</option>
       </select>
 
     </section>
 
 
-    <section class="card">
+    <!-- LEADS -->
+    <section class="leads-section">
 
-      <div class="lead-title">
+      <div class="section-heading">
         <h2>Lead Management</h2>
         <p>Webnity Global</p>
       </div>
@@ -121,46 +107,230 @@
         <table>
 
           <thead>
-
             <tr>
-
               <th>Name</th>
-
               <th>Mobile</th>
-
               <th>Business</th>
-
               <th>Service</th>
-
               <th>Platform</th>
-
               <th>Status</th>
-
               <th>Requirement</th>
-
               <th>Action</th>
-
             </tr>
-
           </thead>
 
-          <tbody id="rows"></tbody>
+          <tbody id="leads">
+            <tr>
+              <td colspan="8" class="empty-state">
+                No leads yet.
+              </td>
+            </tr>
+          </tbody>
 
         </table>
 
       </div>
-
-      <p id="empty">
-        No leads yet.
-      </p>
 
     </section>
 
   </main>
 
 
+  <!-- ADD / EDIT LEAD MODAL -->
+  <div id="leadModal" class="modal">
+
+    <div class="modal-content">
+
+      <div class="modal-header">
+
+        <div>
+          <h2 id="modalTitle">Add New Lead</h2>
+          <p>Webnity Global CRM</p>
+        </div>
+
+        <button
+          type="button"
+          id="closeModal"
+          class="close-btn"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <form id="leadForm">
+
+        <input type="hidden" id="leadId">
+
+
+        <div class="form-grid">
+
+          <div class="form-group">
+            <label>Name</label>
+            <input
+              type="text"
+              id="name"
+              placeholder="Enter customer name"
+              required
+            >
+          </div>
+
+
+          <div class="form-group">
+            <label>Mobile</label>
+            <input
+              type="tel"
+              id="mobile"
+              placeholder="Enter mobile number"
+              required
+            >
+          </div>
+
+
+          <div class="form-group">
+            <label>Business</label>
+            <input
+              type="text"
+              id="business"
+              placeholder="Business name"
+            >
+          </div>
+
+
+          <div class="form-group">
+            <label>Service</label>
+
+            <select id="service">
+
+              <option value="">Select Service</option>
+
+              <option value="E-commerce Onboarding">
+                E-commerce Onboarding
+              </option>
+
+              <option value="Account Management">
+                Account Management
+              </option>
+
+              <option value="Digital Marketing">
+                Digital Marketing
+              </option>
+
+              <option value="Website Development">
+                Website Development
+              </option>
+
+              <option value="Software Development">
+                Software Development
+              </option>
+
+              <option value="SEO">
+                SEO
+              </option>
+
+              <option value="Meta Ads">
+                Meta Ads
+              </option>
+
+              <option value="Quick Commerce">
+                Quick Commerce
+              </option>
+
+              <option value="Other">
+                Other
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>Platform</label>
+
+            <select id="platform">
+
+              <option value="">Select Platform</option>
+
+              <option value="Amazon">Amazon</option>
+              <option value="Flipkart">Flipkart</option>
+              <option value="Meesho">Meesho</option>
+              <option value="Myntra">Myntra</option>
+              <option value="Nykaa">Nykaa</option>
+              <option value="Ajio">Ajio</option>
+              <option value="Blinkit">Blinkit</option>
+              <option value="Zepto">Zepto</option>
+              <option value="Swiggy Instamart">Swiggy Instamart</option>
+              <option value="BigBasket">BigBasket</option>
+              <option value="JioMart">JioMart</option>
+              <option value="Other">Other</option>
+
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>Status</label>
+
+            <select id="status">
+
+              <option value="New">New</option>
+              <option value="Contacted">Contacted</option>
+              <option value="Qualified">Qualified</option>
+              <option value="Lost">Lost</option>
+
+            </select>
+
+          </div>
+
+
+          <div class="form-group full-width">
+
+            <label>Requirement</label>
+
+            <textarea
+              id="requirement"
+              rows="4"
+              placeholder="Customer requirement..."
+            ></textarea>
+
+          </div>
+
+        </div>
+
+
+        <div class="form-actions">
+
+          <button
+            type="button"
+            id="cancelLead"
+            class="cancel-btn"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            class="save-btn"
+          >
+            Save Lead
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+  <!-- APP JS -->
   <script src="/app.js"></script>
 
 </body>
-
 </html>

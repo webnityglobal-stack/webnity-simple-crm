@@ -1,1 +1,128 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Webnity Global CRM</title><link rel="stylesheet" href="/style.css"></head><body><header><div><h1>Webnity Global CRM</h1><p>WhatsApp Lead Management</p></div><button onclick="load()">Refresh</button></header><main><section class="stats"><div>Total <b id="total">0</b></div><div>New <b id="new">0</b></div><div>Contacted <b id="contacted">0</b></div><div>Qualified <b id="qualified">0</b></div></section><div class="tools"><input id="search" placeholder="Search leads..."><select id="filter"><option value="">All Status</option><option>New</option><option>Contacted</option><option>Qualified</option><option>Won</option><option>Lost</option></select></div><section class="card"><table><thead><tr><th>Name</th><th>Mobile</th><th>Business</th><th>Service</th><th>Platform</th><th>Status</th><th>Requirement</th></tr></thead><tbody id="rows"></tbody></table><p id="empty">No leads yet.</p></section></main><script src="/app.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Webnity Global CRM</title>
+
+  <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+
+  <header class="crm-header">
+
+    <div class="brand">
+
+      <img
+        src="/WhatsApp%20Image%202026-08-19%20at%2023.38.48.jpeg"
+        alt="Webnity Global Logo"
+        class="crm-logo"
+      >
+
+      <div class="brand-text">
+        <h1>Webnity Global CRM</h1>
+        <p>WhatsApp Lead Management</p>
+      </div>
+
+    </div>
+
+    <button class="refresh-btn" onclick="load()">
+      ↻ Refresh
+    </button>
+
+  </header>
+
+
+  <main>
+
+    <section class="stats">
+
+      <div class="stat-card total-card">
+        <span>Total Leads</span>
+        <b id="total">0</b>
+      </div>
+
+      <div class="stat-card new-card">
+        <span>New</span>
+        <b id="new">0</b>
+      </div>
+
+      <div class="stat-card contacted-card">
+        <span>Contacted</span>
+        <b id="contacted">0</b>
+      </div>
+
+      <div class="stat-card qualified-card">
+        <span>Qualified</span>
+        <b id="qualified">0</b>
+      </div>
+
+    </section>
+
+
+    <section class="tools">
+
+      <input
+        id="search"
+        type="text"
+        placeholder="Search leads..."
+      >
+
+      <select id="filter">
+        <option value="">All Status</option>
+        <option>New</option>
+        <option>Contacted</option>
+        <option>Qualified</option>
+        <option>Won</option>
+        <option>Lost</option>
+      </select>
+
+    </section>
+
+
+    <section class="card">
+
+      <div class="table-header">
+        <h2>Lead Management</h2>
+        <span>Webnity Global</span>
+      </div>
+
+      <div class="table-wrapper">
+
+        <table>
+
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Mobile</th>
+              <th>Business</th>
+              <th>Service</th>
+              <th>Platform</th>
+              <th>Status</th>
+              <th>Requirement</th>
+            </tr>
+          </thead>
+
+          <tbody id="rows"></tbody>
+
+        </table>
+
+      </div>
+
+      <p id="empty">
+        No leads yet.
+      </p>
+
+    </section>
+
+  </main>
+
+
+  <script src="/app.js"></script>
+
+</body>
+
+</html>

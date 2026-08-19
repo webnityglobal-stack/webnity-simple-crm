@@ -1,4 +1,5 @@
 let key = prompt("CRM admin key:") || "";
+
 let leads = [];
 
 const $ = (id) => document.getElementById(id);
@@ -19,136 +20,238 @@ async function api(url, options = {}) {
 }
 
 function esc(value) {
-  return String(value || "").replace(/[&<>"]/g, (char) => ({
+  return String(value ?? "").replace(/[&<>"']/g, (char) => ({
     "&": "&amp;",
     "<": "&lt;",
     ">": "&gt;",
-    '"': "&quot;"
+    '"': "&quot;",
+    "'": "&#039;"
   }[char]));
+}
+
+function normalizeStatus(status) {
+  return status || "New";
+}
+
+function statusClass(status) {
+  return normalizeStatus(status).toLowerCase();
+}
+
+function render() {
+  const search = $("search").value.toLowerCase().trim();
+  const filter = $("filter").value;
+
+  const filtered = leads.filter((lead) => {
+    const text = [
+      lead.name,
+      lead.mobile,
+      lead.business,
+      lead.service,
+      lead.platform,
+      lead.status,
+      lead.requirement
+    ]
+      .join(" ")
+      .toLowerCase();
+
+    const matchesSearch = !search || text.includes(search);
+    const matchesFilter =
+      !filter || normalizeStatus(lead.status) === filter;
+
+    return matchesSearch && matchesFilter;
+  });
+
+  $("total").textContent = leads.length;
+
+  $("new").textContent = leads.filter(
+    (lead) => normalizeStatus(lead.status) === "New"
+  ).length;
+
+  $("contacted").textContent = leads.filter(
+    (lead) => normalizeStatus(lead.status) === "Contacted"
+  ).length;
+
+  $("qualified").textContent = leads.filter(
+    (lead) => normalizeStatus(lead.status) === "Qualified"
+  ).length;
+
+  $("rows").innerHTML = filtered.map((lead, index) => {
+    const mobile = String(lead.mobile || "").replace(/\D/g, "");
+    const whatsappNumber = mobile.startsWith("91")
+      ? mobile
+      : `91${mobile}`;
+
+    return `
+      <tr>
+
+        <td>
+          <strong>${esc(lead.name || "-")}</strong>
+        </td>
+
+        <td>
+          ${esc(lead.mobile || "-")}
+        </td>
+
+        <td>
+          ${esc(lead.business || "-")}
+        </td>
+
+        <td>
+          ${esc(lead.service || "-")}
+        </td>
+
+        <td>
+          ${esc(lead.platform || "-")}
+        </td>
+
+        <td>
+          <select
+            class="status-select ${statusClass(lead.status)}"
+            onchange="changeStatus(${index}, this.value)"
+          >
+            <option ${normalizeStatus(lead.status) === "New" ? "selected" : ""}>
+              New
+            </option>
+
+            <option ${normalizeStatus(lead.status) === "Contacted" ? "selected" : ""}>
+              Contacted
+            </option>
+
+            <option ${normalizeStatus(lead.status) === "Qualified" ? "selected" : ""}>
+              Qualified
+            </option>
+
+            <option ${normalizeStatus(lead.status) === "Won" ? "selected" : ""}>
+              Won
+            </option>
+
+            <option ${normalizeStatus(lead.status) === "Lost" ? "selected" : ""}>
+              Lost
+            </option>
+          </select>
+        </td>
+
+        <td>
+          ${esc(lead.requirement || "-")}
+        </td>
+
+        <td class="actions">
+
+          <a
+            class="action-btn call-btn"
+            href="tel:${esc(lead.mobile || "")}"
+            title="Call"
+          >
+            📞
+          </a>
+
+          <a
+            class="action-btn whatsapp-btn"
+            href="https://wa.me/${whatsappNumber}"
+            target="_blank"
+            rel="noopener"
+            title="WhatsApp"
+          >
+            💬
+          </a>
+
+          <button
+            class="action-btn delete-btn"
+            onclick="deleteLead(${index})"
+            title="Delete"
+          >
+            🗑️
+          </button>
+
+        </td>
+
+      </tr>
+    `;
+  }).join("");
+
+  $("empty").style.display =
+    filtered.length === 0 ? "block" : "none";
 }
 
 async function load() {
   try {
     leads = await api("/api/leads");
+
+    if (!Array.isArray(leads)) {
+      leads = [];
+    }
+
     render();
+
   } catch (error) {
     console.error(error);
-    alert("Wrong admin key or CRM API unavailable.");
+
+    $("rows").innerHTML = "";
+
+    $("empty").textContent =
+      "Unable to load leads. Check admin key.";
+
+    $("empty").style.display = "block";
   }
 }
 
-function render() {
-  const search = $("search").value.toLowerCase();
-  const filter = $("filter").value;
+async function changeStatus(index, status) {
+  const lead = leads[index];
 
-  const filtered = leads.filter((lead) => {
-    const text = Object.values(lead)
-      .join(" ")
-      .toLowerCase();
+  if (!lead) return;
 
-    return (
-      text.includes(search) &&
-      (!filter || lead.status === filter)
-    );
-  });
+  try {
 
-  $("rows").innerHTML = filtered.map((lead) => `
-    <tr>
-      <td>
-        <strong>${esc(lead.full_name)}</strong>
-      </td>
-
-      <td>
-        <a href="tel:${esc(lead.mobile_number)}">
-          ${esc(lead.mobile_number)}
-        </a>
-      </td>
-
-      <td>${esc(lead.business_name)}</td>
-
-      <td>
-        <span class="service-badge">
-          ${esc(lead.service)}
-        </span>
-      </td>
-
-      <td>${esc(lead.platform)}</td>
-
-      <td>
-        <select
-          class="status"
-          data-id="${esc(lead.id)}"
-          data-current="${esc(lead.status)}"
-        >
-          ${["New", "Contacted", "Qualified", "Won", "Lost"]
-            .map((status) => `
-              <option
-                value="${status}"
-                ${status === lead.status ? "selected" : ""}
-              >
-                ${status}
-              </option>
-            `)
-            .join("")}
-        </select>
-      </td>
-
-      <td>${esc(lead.requirement)}</td>
-    </tr>
-  `).join("");
-
-  $("empty").style.display =
-    filtered.length === 0 ? "block" : "none";
-
-  updateStats();
-
-  document.querySelectorAll(".status").forEach((select) => {
-    select.addEventListener("change", async () => {
-      try {
-        await api(
-          `/api/leads/${select.dataset.id}`,
-          {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              status: select.value
-            })
-          }
-        );
-
-        await load();
-      } catch (error) {
-        console.error(error);
-        alert("Unable to update lead status.");
-        await load();
-      }
+    await api(`/api/leads/${lead.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        ...lead,
+        status
+      })
     });
-  });
+
+    lead.status = status;
+
+    render();
+
+  } catch (error) {
+    alert("Status update failed.");
+    console.error(error);
+  }
 }
 
-function updateStats() {
-  $("total").textContent = leads.length;
+async function deleteLead(index) {
+  const lead = leads[index];
 
-  $("new").textContent =
-    leads.filter((lead) => lead.status === "New").length;
+  if (!lead) return;
 
-  $("contacted").textContent =
-    leads.filter((lead) => lead.status === "Contacted").length;
+  const confirmed = confirm(
+    `Delete lead "${lead.name || "this lead"}"?`
+  );
 
-  $("qualified").textContent =
-    leads.filter((lead) => lead.status === "Qualified").length;
+  if (!confirmed) return;
 
-  const won = document.getElementById("won");
+  try {
 
-  if (won) {
-    won.textContent =
-      leads.filter((lead) => lead.status === "Won").length;
+    await api(`/api/leads/${lead.id}`, {
+      method: "DELETE"
+    });
+
+    leads.splice(index, 1);
+
+    render();
+
+  } catch (error) {
+    alert("Delete failed.");
+    console.error(error);
   }
 }
 
 $("search").addEventListener("input", render);
+
 $("filter").addEventListener("change", render);
 
 load();

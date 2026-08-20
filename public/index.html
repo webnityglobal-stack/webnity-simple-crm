@@ -42,24 +42,40 @@
 
     <section class="stats-grid">
 
+      <!-- TOTAL -->
       <div class="stat-card total-card">
         <span>Total Leads</span>
         <strong id="total">0</strong>
       </div>
 
+      <!-- NEW -->
       <div class="stat-card new-card">
         <span>New</span>
         <strong id="new">0</strong>
       </div>
 
+      <!-- CONTACTED -->
       <div class="stat-card contacted-card">
         <span>Contacted</span>
         <strong id="contacted">0</strong>
       </div>
 
+      <!-- QUALIFIED -->
       <div class="stat-card qualified-card">
         <span>Qualified</span>
         <strong id="qualified">0</strong>
+      </div>
+
+      <!-- WON -->
+      <div class="stat-card won-card">
+        <span>Won</span>
+        <strong id="won">0</strong>
+      </div>
+
+      <!-- LOST -->
+      <div class="stat-card lost-card">
+        <span>Lost</span>
+        <strong id="lost">0</strong>
       </div>
 
     </section>
@@ -88,6 +104,7 @@
         <option value="New">New</option>
         <option value="Contacted">Contacted</option>
         <option value="Qualified">Qualified</option>
+        <option value="Won">Won</option>
         <option value="Lost">Lost</option>
       </select>
 
@@ -120,11 +137,13 @@
           </thead>
 
           <tbody id="leads">
+
             <tr>
               <td colspan="8" class="empty-state">
                 No leads yet.
               </td>
             </tr>
+
           </tbody>
 
         </table>
@@ -166,39 +185,53 @@
 
         <div class="form-grid">
 
+          <!-- NAME -->
           <div class="form-group">
+
             <label>Name</label>
+
             <input
               type="text"
               id="name"
               placeholder="Enter customer name"
               required
             >
+
           </div>
 
 
+          <!-- MOBILE -->
           <div class="form-group">
+
             <label>Mobile</label>
+
             <input
               type="tel"
               id="mobile"
               placeholder="Enter mobile number"
               required
             >
+
           </div>
 
 
+          <!-- BUSINESS -->
           <div class="form-group">
+
             <label>Business</label>
+
             <input
               type="text"
               id="business"
               placeholder="Business name"
             >
+
           </div>
 
 
+          <!-- SERVICE -->
           <div class="form-group">
+
             <label>Service</label>
 
             <select id="service">
@@ -246,6 +279,7 @@
           </div>
 
 
+          <!-- PLATFORM -->
           <div class="form-group">
 
             <label>Platform</label>
@@ -262,9 +296,15 @@
               <option value="Ajio">Ajio</option>
               <option value="Blinkit">Blinkit</option>
               <option value="Zepto">Zepto</option>
-              <option value="Swiggy Instamart">Swiggy Instamart</option>
-              <option value="BigBasket">BigBasket</option>
-              <option value="JioMart">JioMart</option>
+              <option value="Swiggy Instamart">
+                Swiggy Instamart
+              </option>
+              <option value="BigBasket">
+                BigBasket
+              </option>
+              <option value="JioMart">
+                JioMart
+              </option>
               <option value="Other">Other</option>
 
             </select>
@@ -272,6 +312,7 @@
           </div>
 
 
+          <!-- STATUS -->
           <div class="form-group">
 
             <label>Status</label>
@@ -279,15 +320,29 @@
             <select id="status">
 
               <option value="New">New</option>
-              <option value="Contacted">Contacted</option>
-              <option value="Qualified">Qualified</option>
-              <option value="Lost">Lost</option>
+
+              <option value="Contacted">
+                Contacted
+              </option>
+
+              <option value="Qualified">
+                Qualified
+              </option>
+
+              <option value="Won">
+                Won
+              </option>
+
+              <option value="Lost">
+                Lost
+              </option>
 
             </select>
 
           </div>
 
 
+          <!-- REQUIREMENT -->
           <div class="form-group full-width">
 
             <label>Requirement</label>
@@ -303,6 +358,7 @@
         </div>
 
 
+        <!-- FORM ACTIONS -->
         <div class="form-actions">
 
           <button

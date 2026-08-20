@@ -10,7 +10,6 @@ let editingLeadId = null;
 
 const $ = (id) => document.getElementById(id);
 
-
 /* =========================
    API
 ========================= */
@@ -32,9 +31,8 @@ async function api(url, options = {}) {
   return response.json();
 }
 
-
 /* =========================
-   ESCAPE HTML
+   HELPERS
 ========================= */
 
 function esc(value) {
@@ -46,6 +44,17 @@ function esc(value) {
     .replace(/'/g, "&#039;");
 }
 
+function getMobile(lead) {
+  return lead.mobile || lead.mobile_number || "";
+}
+
+function getBusiness(lead) {
+  return lead.business || lead.business_name || "";
+}
+
+function getName(lead) {
+  return lead.full_name || lead.name || "";
+}
 
 /* =========================
    LOAD LEADS
@@ -65,13 +74,11 @@ async function load() {
   }
 }
 
-
 /* =========================
    RENDER
 ========================= */
 
 function render() {
-
   const searchInput = $("search");
   const filterInput = $("filter");
   const tbody = $("leads");
@@ -85,27 +92,33 @@ function render() {
   const filter = filterInput.value;
 
   const filtered = leads.filter((lead) => {
+    const mobile = getMobile(lead);
+    const business = getBusiness(lead);
+    const name = getName(lead);
 
     const text = [
-      lead.full_name,
-      lead.mobile_number,
-      lead.business_name,
+      name,
+      mobile,
+      business,
       lead.service,
       lead.platform,
       lead.status,
-      lead.requirement
+      lead.requirement,
+      lead.email,
+      lead.city,
+      lead.notes
     ]
       .join(" ")
       .toLowerCase();
 
-    const matchesSearch = !search || text.includes(search);
+    const matchesSearch =
+      !search || text.includes(search);
 
     const matchesFilter =
       !filter || lead.status === filter;
 
     return matchesSearch && matchesFilter;
   });
-
 
   /* =========================
      STATS
@@ -128,13 +141,11 @@ function render() {
       (lead) => lead.status === "Qualified"
     ).length;
 
-
   /* =========================
-     TABLE
+     EMPTY
   ========================= */
 
   if (!filtered.length) {
-
     tbody.innerHTML = `
       <tr>
         <td colspan="8" class="empty-state">
@@ -146,23 +157,49 @@ function render() {
     return;
   }
 
+  /* =========================
+     TABLE
+  ========================= */
 
   tbody.innerHTML = filtered
     .map((lead) => {
+      const mobile = getMobile(lead);
+      const business = getBusiness(lead);
+      const name = getName(lead);
+
+      const whatsappNumber =
+        String(mobile)
+          .replace(/\D/g, "")
+          .replace(/^0/, "91");
+
+      const whatsappUrl =
+        whatsappNumber
+          ? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
+              `Hello ${name || "Customer"}, this is Webnity Global.`
+            )}`
+          : "#";
+
+      const callUrl =
+        mobile
+          ? `tel:${mobile}`
+          : "#";
 
       return `
         <tr>
 
           <td>
-            <strong>${esc(lead.full_name)}</strong>
+            <strong>${esc(name)}</strong>
           </td>
 
           <td>
-            ${esc(lead.mobile_number)}
+            ${mobile
+              ? `<a href="${esc(callUrl)}" class="call-link">${esc(mobile)}</a>`
+              : "-"
+            }
           </td>
 
           <td>
-            ${esc(lead.business_name)}
+            ${esc(business)}
           </td>
 
           <td>
@@ -174,12 +211,10 @@ function render() {
           </td>
 
           <td>
-
             <select
               class="status-select"
               data-id="${esc(lead.id)}"
             >
-
               ${[
                 "New",
                 "Contacted",
@@ -198,9 +233,7 @@ function render() {
                   `
                 )
                 .join("")}
-
             </select>
-
           </td>
 
           <td>
@@ -208,7 +241,6 @@ function render() {
           </td>
 
           <td>
-
             <div class="action-buttons">
 
               <button
@@ -216,18 +248,48 @@ function render() {
                 class="edit-btn"
                 data-edit-id="${esc(lead.id)}"
               >
-                Edit
+                ✏️ Edit
+              </button>
+
+              ${
+                mobile
+                  ? `
+                    <a
+                      href="${esc(callUrl)}"
+                      class="call-btn"
+                      title="Call customer"
+                    >
+                      📞
+                    </a>
+
+                    <a
+                      href="${esc(whatsappUrl)}"
+                      target="_blank"
+                      rel="noopener"
+                      class="whatsapp-btn"
+                      title="WhatsApp customer"
+                    >
+                      💬
+                    </a>
+                  `
+                  : ""
+              }
+
+              <button
+                type="button"
+                class="delete-btn"
+                data-delete-id="${esc(lead.id)}"
+              >
+                🗑️
               </button>
 
             </div>
-
           </td>
 
         </tr>
       `;
     })
     .join("");
-
 
   /* =========================
      STATUS EVENTS
@@ -238,11 +300,9 @@ function render() {
     .forEach((select) => {
 
       select.addEventListener("change", async () => {
-
         try {
-
           await api(
-            `/api/leads/${select.dataset.id}`,
+            `/api/leads/${select.dataset.id}/status`,
             {
               method: "PATCH",
               body: JSON.stringify({
@@ -254,18 +314,15 @@ function render() {
           await load();
 
         } catch (error) {
-
           console.error(error);
 
           alert(
             "Status update nahi ho paya."
           );
         }
-
       });
 
     });
-
 
   /* =========================
      EDIT EVENTS
@@ -289,8 +346,55 @@ function render() {
 
     });
 
-}
+  /* =========================
+     DELETE EVENTS
+  ========================= */
 
+  document
+    .querySelectorAll("[data-delete-id]")
+    .forEach((button) => {
+
+      button.addEventListener("click", async () => {
+
+        const lead = leads.find(
+          (item) => item.id === button.dataset.deleteId
+        );
+
+        if (!lead) return;
+
+        const name = getName(lead);
+
+        const confirmed = confirm(
+          `Kya aap "${name}" ko delete karna chahte ho?`
+        );
+
+        if (!confirmed) return;
+
+        try {
+
+          await api(
+            `/api/leads/${lead.id}`,
+            {
+              method: "DELETE"
+            }
+          );
+
+          await load();
+
+        } catch (error) {
+
+          console.error(error);
+
+          alert(
+            "Lead delete nahi ho paya."
+          );
+        }
+
+      });
+
+    });
+
+}
 
 /* =========================
    OPEN ADD FORM
@@ -318,7 +422,6 @@ function openLeadForm() {
   }, 100);
 }
 
-
 /* =========================
    OPEN EDIT FORM
 ========================= */
@@ -334,13 +437,13 @@ function openEditForm(lead) {
     lead.id || "";
 
   $("name").value =
-    lead.full_name || "";
+    getName(lead);
 
   $("mobile").value =
-    lead.mobile_number || "";
+    getMobile(lead);
 
   $("business").value =
-    lead.business_name || "";
+    getBusiness(lead);
 
   $("service").value =
     lead.service || "";
@@ -359,7 +462,6 @@ function openEditForm(lead) {
   document.body.style.overflow = "hidden";
 }
 
-
 /* =========================
    CLOSE FORM
 ========================= */
@@ -373,7 +475,6 @@ function closeLeadForm() {
   editingLeadId = null;
 }
 
-
 /* =========================
    SAVE LEAD
 ========================= */
@@ -385,10 +486,10 @@ async function saveLead(event) {
   const full_name =
     $("name").value.trim();
 
-  const mobile_number =
+  const mobile =
     $("mobile").value.trim();
 
-  const business_name =
+  const business =
     $("business").value.trim();
 
   const service =
@@ -403,7 +504,6 @@ async function saveLead(event) {
   const requirement =
     $("requirement").value.trim();
 
-
   if (!full_name) {
 
     alert("Name enter karo.");
@@ -413,8 +513,7 @@ async function saveLead(event) {
     return;
   }
 
-
-  if (!mobile_number) {
+  if (!mobile) {
 
     alert("Mobile number enter karo.");
 
@@ -422,7 +521,6 @@ async function saveLead(event) {
 
     return;
   }
-
 
   try {
 
@@ -432,22 +530,24 @@ async function saveLead(event) {
 
     if (editingLeadId) {
 
-      /*
-        Current server PATCH API
-        sirf status update support karti hai.
-        Isliye edit ke time status update
-        kiya ja raha hai.
-      */
-
       await api(
         `/api/leads/${editingLeadId}`,
         {
-          method: "PATCH",
+          method: "PUT",
+
           body: JSON.stringify({
-            status
+            full_name,
+            mobile,
+            business,
+            service,
+            platform,
+            status,
+            requirement
           })
         }
       );
+
+      alert("Lead successfully update ho gaya.");
 
     }
 
@@ -464,17 +564,19 @@ async function saveLead(event) {
 
           body: JSON.stringify({
             full_name,
-            mobile_number,
-            business_name,
+            mobile,
+            business,
             service,
             platform,
+            status,
             requirement
           })
         }
       );
 
-    }
+      alert("Lead successfully save ho gaya.");
 
+    }
 
     closeLeadForm();
 
@@ -488,11 +590,8 @@ async function saveLead(event) {
       "Lead save nahi ho paya.\n\n" +
       "Admin key ya server check karo."
     );
-
   }
-
 }
-
 
 /* =========================
    DOCUMENT EVENTS
@@ -526,8 +625,7 @@ document.addEventListener(
     const modal =
       $("leadModal");
 
-
-    /* ADD LEAD */
+    /* ADD */
 
     if (addButton) {
 
@@ -537,7 +635,6 @@ document.addEventListener(
       );
 
     }
-
 
     /* CLOSE */
 
@@ -550,7 +647,6 @@ document.addEventListener(
 
     }
 
-
     /* CANCEL */
 
     if (cancelButton) {
@@ -561,7 +657,6 @@ document.addEventListener(
       );
 
     }
-
 
     /* FORM */
 
@@ -574,7 +669,6 @@ document.addEventListener(
 
     }
 
-
     /* REFRESH */
 
     if (refreshButton) {
@@ -585,7 +679,6 @@ document.addEventListener(
       );
 
     }
-
 
     /* SEARCH */
 
@@ -598,7 +691,6 @@ document.addEventListener(
 
     }
 
-
     /* FILTER */
 
     if (filter) {
@@ -610,8 +702,7 @@ document.addEventListener(
 
     }
 
-
-    /* CLICK OUTSIDE MODAL */
+    /* CLICK OUTSIDE */
 
     if (modal) {
 
@@ -619,9 +710,7 @@ document.addEventListener(
         "click",
         (event) => {
 
-          if (
-            event.target === modal
-          ) {
+          if (event.target === modal) {
             closeLeadForm();
           }
 
@@ -629,7 +718,6 @@ document.addEventListener(
       );
 
     }
-
 
     /* ESCAPE */
 
@@ -649,7 +737,6 @@ document.addEventListener(
 
       }
     );
-
 
     /* LOAD */
 
